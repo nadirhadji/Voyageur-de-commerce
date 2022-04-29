@@ -5,10 +5,9 @@
 */
 
 #include "carte.h"
-#include <limits>
 
 //Rechercher la position d'un nom de rue dans le vecteur routes.
-pair<bool,int> Carte::trouverIndiceRoute( string& nom )
+pair<bool,int> Carte::trouver_indice_route( string& nom )
 {
     std::pair<bool, int > resultat;
 
@@ -28,9 +27,9 @@ pair<bool,int> Carte::trouverIndiceRoute( string& nom )
 }
 
 //Obtenir l'indice du nom de route. Insertion si il n'existe pas.
-int Carte::obtenirIndiceNomRoute( string& nom)
+int Carte::obtenir_indice_nom_route( string& nom)
 {
-    pair<bool,int> indice = trouverIndiceRoute(nom);
+    pair<bool,int> indice = trouver_indice_route(nom);
     int positionNom = indice.second;
     if ( indice.first == false ) 
     {
@@ -50,15 +49,15 @@ void Carte::ajouterLieu( string& nomlieu, Coordonnee& c)
 
 void Carte::ajouterRoute( string& nomroute,  list<string>& route) 
 {   
-    int positionNomRoute = obtenirIndiceNomRoute(nomroute);
+    int position_nom_route = obtenir_indice_nom_route(nomroute);
     list<string>::const_iterator  it = route.begin();
     string id_parent = (*it);
     ++it;
     while ( it != route.end() )
     {
         string id_voisin = (*it);
-        int distance = noeuds[id_parent].coord.distance(noeuds[id_voisin].coord);
-        Arc arc(id_voisin,distance,positionNomRoute);
+        double distance = noeuds[id_parent].coord.distance(noeuds[id_voisin].coord);
+        Arc arc(id_voisin,distance,position_nom_route);
         noeuds[id_parent].voisins.insert(arc);
         id_parent = id_voisin;
         ++it;
@@ -125,10 +124,9 @@ istream& operator >> (istream& is, Carte& carte)
     return is;
 }
 
-//Implementation de l'algorithme de dijskstra pour le calcul des chemins
-//en plus court chemin
+//Algorithme de dijkstra pour le calcul des chemins en plus court chemin
 //registre = map < sommet , paire < distance , nom_sommet_parent > >
-void Carte::djikstra(string& nom_origine, map<string,pair<double,string>>& registre )
+void Carte::djikstra( string& origine, map<string,pair<double,string>>& registre )
 {
     //Initialisation de la table distance/parent pour chaque noeud O(n)
     for ( const auto& item : noeuds )
@@ -137,11 +135,11 @@ void Carte::djikstra(string& nom_origine, map<string,pair<double,string>>& regis
         registre[item.first] = paire;
     }
 
-    registre[nom_origine].first = 0;
+    registre[origine].first = 0;
 
     //Init de Q avec tout les voisin du sommet d'origine.
     priority_queue<Voisin, vector<Voisin>, compare_voisin> queue;
-    queue.push(Voisin(nom_origine,0));
+    queue.push(Voisin(origine,0));
 
     while ( ! queue.empty() )
     {
@@ -151,7 +149,7 @@ void Carte::djikstra(string& nom_origine, map<string,pair<double,string>>& regis
 
         for ( auto element : noeuds[nom_premier].voisins )
         {
-            int d = registre[nom_premier].first + element.distance;
+            double d = registre[nom_premier].first + element.distance;
 
             if ( d < registre[element.id_voisin].first && d != 0 )
             {
@@ -170,7 +168,7 @@ void Carte::djikstra(string& nom_origine, map<string,pair<double,string>>& regis
     // }
 }
 
-double Carte::LireRegistreDjikstra( string& nom_destination, map<string,pair<double,string>>& registre, 
+double Carte::lire_table_djikstra( string& nom_destination, map<string,pair<double,string>>& registre, 
                         list<string>& chemin)
 {
     double total = registre[nom_destination].first;
@@ -182,77 +180,57 @@ double Carte::LireRegistreDjikstra( string& nom_destination, map<string,pair<dou
         chemin.push_front(registre[str_courrant].second);
         str_courrant = registre[str_courrant].second;
     }
+    chemin.pop_front();
     return total;
 }
 
 //TODO : trouver un moyen de retrouner le chemin trouvé
-void Carte::calculerProchaineDestination(string& nom_origine, 
-                                    list<string>& noms_destinations, 
-                                    map<string,pair<double,string>>& registre,
-                                    pair<double,list<string>>& elue )
+double Carte::calculer_prochaine_destination ( string& origine, list<string>& destinations, 
+                            list<string>& chemin_noeuds )
 {
-    double distance_min = numeric_limits<double>::infinity();
-    list<string> chemin_min;
-    string destination_elue;
-    //djikstra(nom_origine,registre);
+    double distance_minimale = numeric_limits<double>::infinity();
+    list<string> chemin_minimale;
+    map<string,pair<double,string>> table_chemins_minimal;
+    djikstra(origine,table_chemins_minimal);
 
-    for ( list<string>::iterator iter = noms_destinations.begin() ; iter != noms_destinations.end() ; iter++ ) 
+    for ( auto iter = destinations.begin() ; iter != destinations.end() ; iter++ ) 
     {
-        list<string> chemin_courrant;
-        double distance_courrante = LireRegistreDjikstra((*iter),registre,chemin_courrant);
-        if (distance_courrante < distance_min )
+        list<string> chemin;
+        double distance = lire_table_djikstra((*iter),table_chemins_minimal,chemin);
+        if (distance < distance_minimale )
         {
-            distance_min = distance_courrante;
-            chemin_min = chemin_courrant;
-            destination_elue = (*iter);
+            distance_minimale = distance;
+            chemin_minimale = chemin;
         }
     }
-    elue.first = distance_min;
-    elue.second = chemin_min;
+    chemin_noeuds.splice(chemin_noeuds.end(),chemin_minimale);
+    return distance_minimale;
 }
 
-double Carte::calculerTrajet(string& nom_origine, list<string>& noms_destinations, 
-                             std::list<string>& out_chemin_noeuds, std::list<string>& out_chemin_routes) 
+double Carte::calculerTrajet (string& origine, list<string>& a_visiter, 
+                        list<string>& chemin_noeuds, list<string>& chemin_routes) 
 {
-    string point_initial = nom_origine;
-    string position = nom_origine;
+    chemin_noeuds.push_front(origine);
+    string point_initial = origine;
+    string position = origine;
     double total = 0;
 
-    map< string , pair<double,string> > registre;
-    djikstra(nom_origine,registre);
-
-    //list<string>::const_reverse_iterator
-    while(noms_destinations.size() != 0 )
+    while(a_visiter.size() != 0 )
     {
-        //map<string,pair<double,string>> registre;
-        pair<double,list<string>> destination_elue;
-        calculerProchaineDestination(position,noms_destinations,registre,destination_elue); 
-        position = destination_elue.second.back();
-        noms_destinations.remove(destination_elue.second.back());
-
-        for (std::list<string>::iterator it = destination_elue.second.begin(); it != destination_elue.second.end(); ++it){
-            std::cout << (*it) << " -> ";
-        }
-        std::cout << " = " << destination_elue.first << " \n";
-
-        total += destination_elue.first;
+        double distance = calculer_prochaine_destination(position,a_visiter,chemin_noeuds); 
+        position = chemin_noeuds.back();
+        a_visiter.remove(chemin_noeuds.back());
+        total += distance;
     }
 
-    noms_destinations.push_back ( point_initial );
-    map<string,pair<double,string>> registre_final;
-    pair<double,list<string>> prochain_final;
-    calculerProchaineDestination( position , noms_destinations , registre_final , prochain_final ); 
-    position = prochain_final.second.back();
-    noms_destinations.remove( prochain_final.second.back() );
+    a_visiter.push_back(point_initial);
+    double distance_retour = calculer_prochaine_destination( position,a_visiter,chemin_noeuds); 
+    total += distance_retour;
 
-    for (std::list<string>::iterator it = prochain_final.second.begin(); it != prochain_final.second.end(); ++it){
-            std::cout << (*it) << " -> ";
+    for (auto it = chemin_noeuds.begin(); it != chemin_noeuds.end(); ++it) {
+            std::cout << (*it) << " ";
     }
-    std::cout << " = " << prochain_final.first;
-
-    total += prochain_final.first;
-
-    std::cout << " \n total = " << total << "\n\n" << endl;
+    std::cout << " \n" << round(total) << " m\n";
 
     return total;
 }
