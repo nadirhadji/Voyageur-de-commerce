@@ -1,8 +1,13 @@
-/*  INF3105 - Structures de données et algorithmes
- *  UQAM / Département d'informatique
- *  Automne 2014
- *  Squelette pour le TP3
-*/
+/**
+ * @file carte.h
+ * @author Nadir Hadji
+ * @brief 
+ * @version 0.1
+ * @date 2022-04-29
+ * 
+ * @copyright Copyright (c) 2022
+ * 
+ */
 
 #ifndef CARTE_HEADER
 #define CARTE_HEADER
@@ -25,10 +30,11 @@ struct Arc
 {
   string id_voisin;
   double distance;
-  int id_rue;
+  string id_rue;
 
-  Arc() : id_voisin("-"), distance(numeric_limits<int>::infinity()) , id_rue(-1) {} 
-  Arc(string p, double d, int r) : id_voisin(p) , distance(d) , id_rue(r) {}
+  Arc() : id_voisin("-"), distance(numeric_limits<int>::infinity()) , id_rue("") {}
+  Arc(string v, double d) : id_voisin(v) , distance(d) {}
+  Arc(string p, double d, string r) : id_voisin(p) , distance(d) , id_rue(r) {}
 
   Arc& operator = (const Arc& a)
   {
@@ -81,28 +87,28 @@ class Carte
 
     int     obtenir_indice_nom_route( string& nom);
 
-    void    djikstra( string& nom_origine, map<string, pair<double,string>>& registre);
+    void    djikstra( string& nom_origine, map<string, pair<double,string>>& table_distances);
 
     double  calculer_prochaine_destination ( string& origine, list<string>& destinations, 
-                            list<string>& chemin_noeuds );
+                            list<string>& chemin_noeuds, list<string>& chemin_routes );
 
-    double  lire_table_djikstra( string& origine, map<string,pair<double,string>>& registre, 
-                                  list<string>& chemin);
+    double  lire_table_djikstra( string& origine, map<string,pair<double,string>>& table_distances, 
+                            list<string>& chemin_noeuds, list<string>& chemin_routes);
 
     map<string,Noeud> noeuds;
     vector<string> routes;
 
   public:
 
-    void    ajouterLieu(string& nom, Coordonnee& c);
+    void    ajouter_lieu(string& nom, Coordonnee& c);
 
-    void    ajouterRoute(string& nom, list<string>& noms);
+    void    ajouter_route(string& nom, list<string>& noms);
 
-    double  calculerTrajet(string& origine, list<string>& destination, 
+    double  calculer_trajet(string& origine, list<string>& destination, 
                           std::list<string>& out_cheminnoeuds, std::list<string>& out_cheminroutes);
 
-    double  calculerChemin( string& origine,  string& destination,
-                             std::list<string>& out_cheminnoeuds, std::list<string>& out_cheminroutes);
+    double  calculer_chemin( string& origine,  string& destination,
+                          std::list<string>& out_cheminnoeuds, std::list<string>& out_cheminroutes);
 
     void    afficher_noeuds() const;
 

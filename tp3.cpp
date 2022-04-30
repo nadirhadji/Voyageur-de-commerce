@@ -32,15 +32,15 @@ void tp3(Carte& carte, istream& ismissions)
         }
         
         list<string> chemin_noeuds, chemin_routes;
-        double distance = carte.calculerTrajet(nomlieuaffaire, destinations, chemin_noeuds, chemin_routes);
-        
-        // for(list<string>::const_iterator iter=chemin_noeuds.begin();iter!=chemin_noeuds.end();++iter)
-        //     cout << *iter << " ";
-        // cout << endl;
-        // for(list<string>::const_iterator iter=chemin_routes.begin();iter!=chemin_routes.end();++iter)
-        //     cout << *iter << " ";
-        // cout << endl;
-        // cout << round(distance) << " m" << endl;
+        double distance = carte.calculer_trajet(nomlieuaffaire, destinations, chemin_noeuds, chemin_routes);
+
+        for(auto iter = chemin_noeuds.begin() ; iter != chemin_noeuds.end() ; ++iter )
+            cout << *iter << " ";
+        cout << endl;
+        for(auto iter = chemin_routes.begin() ; iter != chemin_routes.end() ; ++iter )
+            cout << *iter << " ";
+        cout << endl;
+        cout << round(distance) << " m" << endl;
     }
     
 }
