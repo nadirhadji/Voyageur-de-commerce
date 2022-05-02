@@ -2,3 +2,11 @@
 /carte.o
 /coordonnee.o
 /tp3.o
+*.txt
+*.validation
+*.resultat
+*.o
+tp3
+*.zip
+test
+teste

@@ -166,29 +166,31 @@ void Carte::djikstra( string& origine, map<string,pair<double,string>>& table_di
     }
 }
 
+void Carte::ajouter_route(string parent, string destination_courrante, list<string>& chemin_routes )
+{
+    for ( auto iter = noeuds[parent].voisins.begin() ; iter != noeuds[parent].voisins.end() ; iter++ )
+    {
+        if ( (*iter).id_voisin == destination_courrante )
+        {
+            if (chemin_routes.front() != (*iter).id_rue) 
+                chemin_routes.push_front((*iter).id_rue);
+            break;
+        }
+    }
+}
+
 double Carte::lire_table_djikstra( string& destination, map<string,pair<double,string>>& table_distances, 
                         list<string>& chemin_noeuds, list<string>& chemin_routes )
 {
     double total = table_distances[destination].first;
     string destination_courrante = destination;
-    string nom_rue;
+    
     chemin_noeuds.push_front(destination_courrante);
 
     while ( table_distances[destination_courrante].first != 0 )
     {
         string parent = table_distances[destination_courrante].second; 
-
-        for ( auto iter = noeuds[parent].voisins.begin() ; iter != noeuds[parent].voisins.end() ; iter++ )
-        {
-            if ( (*iter).id_voisin == destination_courrante )
-            {
-                nom_rue = (*iter).id_rue; 
-                if (chemin_routes.front() != nom_rue) 
-                    chemin_routes.push_front(nom_rue);
-                break;
-            }
-        }
-
+        ajouter_route(parent,destination_courrante,chemin_routes);
         chemin_noeuds.push_front(parent);
         destination_courrante = parent;
     }
@@ -221,6 +223,8 @@ double Carte::calculer_prochaine_destination ( string& origine, list<string>& de
     }
 
     chemin_noeuds.splice(chemin_noeuds.end(),chemin_minimale);
+    if ( chemin_routes.back() == routes_minimal.front() )
+        chemin_routes.pop_back();
     chemin_routes.splice(chemin_routes.end(),routes_minimal);
     return distance_minimale;
 }

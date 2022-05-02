@@ -104,6 +104,8 @@ class Carte
 
     void    ajouter_route(string& nom, list<string>& noms);
 
+    void    ajouter_route(string parent, string destination_courrante, list<string>& chemin_routes );
+
     double  calculer_trajet(string& origine, list<string>& destination, 
                           std::list<string>& out_cheminnoeuds, std::list<string>& out_cheminroutes);
 

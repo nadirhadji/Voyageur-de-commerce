@@ -1,13 +1,11 @@
 # Makefile pour TP3
 # à adapter au besoin
 
-OPTIONS = -Wall
-
 #Option -g pour avoir les infos de débogage
 #OPTIONS = -g -O0 -Wall
 
 #Option -O2 pour le code optimisé
-OPTIONS = -O2 -Wall
+OPTIONS = --std=c++11 -O3 -Wall
 
 # Syntaxe : cible : dépendance1 dépendance2 ...
 # Ensuite, la ou les ligne(s) débutant par une tabulation (\t) donne les commandes pour construire une cible
